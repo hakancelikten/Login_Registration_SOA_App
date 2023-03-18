@@ -1,7 +1,9 @@
 ﻿using Business.Abstract;
+using Castle.Core.Internal;
 using Core.Entities.Concrete;
 using Entities.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 
 namespace WebApplication.Controllers
 {
@@ -36,7 +38,12 @@ namespace WebApplication.Controllers
 
             var registerResult = _authService.Register(userForRegisterDto, userForRegisterDto.Password);
 
-            var operationClaim = _operationClaimService.Get("Manager");
+            var operationClaim = _operationClaimService.Get("Customer");
+
+            if (!string.IsNullOrEmpty(userForRegisterDto.ReferralLink))
+            {
+                operationClaim = _operationClaimService.Get("Manager");
+            }
 
             _userOperationClaimService.Add(new UserOperationClaim() { UserId = registerResult.Data.Id, OperationClaimId = operationClaim.Id });
 

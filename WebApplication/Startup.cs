@@ -58,7 +58,7 @@ namespace WebApplication
                 var operationClaimList = new List<OperationClaim>();
                 operationClaimList.Add(new OperationClaim() { Name = "Admin" });
                 operationClaimList.Add(new OperationClaim() { Name = "Manager" });
-                operationClaimList.Add(new OperationClaim() { Name = "Admin" });
+                operationClaimList.Add(new OperationClaim() { Name = "Customer" });
 
 
                 foreach (var item in operationClaimList)
@@ -136,6 +136,12 @@ namespace WebApplication
             {
                 endpoints.MapControllerRoute(
                     name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            }); app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "RegisterIndex",
                     pattern: "{controller=Register}/{action=Index}/{id?}");
 
             });
