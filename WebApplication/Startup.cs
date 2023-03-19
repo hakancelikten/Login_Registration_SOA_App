@@ -8,6 +8,7 @@ using Core.Utilities.Security.Encryption;
 using Core.Utilities.Security.Hashing;
 using Core.Utilities.Security.JWT;
 using DataAccess.Concrete.EntityFramework;
+using Entities;
 using Entities.DTOs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -17,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -38,6 +40,7 @@ namespace WebApplication
             {
                 context.Database.EnsureCreated();
                 context.Database.ExecuteSqlRaw("TRUNCATE TABLE Users");
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE ReferralLinks");
                 context.Database.ExecuteSqlRaw("TRUNCATE TABLE OperationClaims");
                 context.Database.ExecuteSqlRaw("TRUNCATE TABLE UserOperationClaims");
 
@@ -70,12 +73,24 @@ namespace WebApplication
                 context.SaveChanges();
 
                 var adminOperationClaim = context.OperationClaims.FirstOrDefault(x => x.Name == "Admin");
-                var adminUser = context.Users.FirstOrDefault(x => x.Email == "admin@admin.com");
 
+
+                var adminUser = context.Users.FirstOrDefault(x => x.Email == "admin@admin.com");
                 var userOperationClaim = new UserOperationClaim { OperationClaimId = adminOperationClaim.Id, UserId = adminUser.Id };
                 var userOperationClaimEntity = context.Entry(userOperationClaim);
                 userOperationClaimEntity.State = EntityState.Added;
 
+                context.SaveChanges();
+
+
+                var managerOperationClaim = context.OperationClaims.FirstOrDefault(x => x.Name == "Manager");
+                var referralLink = new ReferralLink()
+                {
+                    Link = Guid.NewGuid(),
+                    OperationClaimId = managerOperationClaim.Id
+                };
+                var referralLinkEntity = context.Entry(referralLink);
+                referralLinkEntity.State = EntityState.Added;
                 context.SaveChanges();
 
             }

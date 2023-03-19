@@ -1,9 +1,14 @@
 ﻿using Business.Abstract;
-using Castle.Core.Internal;
-using Core.Entities.Concrete;
+using Core.Utilities.Security.Captcha;
+using Entities;
 using Entities.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace WebApplication.Controllers
 {
@@ -12,6 +17,7 @@ namespace WebApplication.Controllers
         private IAuthService _authService;
         private IUserOperationClaimService _userOperationClaimService;
         private IOperationClaimService _operationClaimService;
+        private IReferralLinkService _referralLinkService;
 
         public RegisterController(IAuthService authService, IUserOperationClaimService userOperationClaimService, IOperationClaimService operationClaimService)
         {
@@ -28,32 +34,62 @@ namespace WebApplication.Controllers
         }
 
         [HttpPost]
-        public IActionResult RegisterUser(UserForRegisterDto userForRegisterDto)
+        public async Task<IActionResult> RegisterUserAsync(UserForRegisterDto userForRegisterDto)
         {
-            var userExists = _authService.UserExists(userForRegisterDto.Email);
-            if (!userExists.Success)
+
+            var captchaImage = HttpContext.Request.Form["g-recaptcha-response"];
+
+            if (string.IsNullOrEmpty(captchaImage))
             {
-                return BadRequest(userExists.Message);
+                return BadRequest("Captcha doğrulanamamıştır");
             }
 
-            var registerResult = _authService.Register(userForRegisterDto, userForRegisterDto.Password);
+            var verified = await CaptchaControl.CheckCaptcha(HttpContext.Connection.RemoteIpAddress.ToString(), captchaImage);
 
-            var operationClaim = _operationClaimService.Get("Customer");
-
-            if (!string.IsNullOrEmpty(userForRegisterDto.ReferralLink))
+            if (!verified)
             {
-                operationClaim = _operationClaimService.Get("Manager");
+                return BadRequest("Captcha yanlış doğrulanmış");
             }
 
-            _userOperationClaimService.Add(new UserOperationClaim() { UserId = registerResult.Data.Id, OperationClaimId = operationClaim.Id });
-
-            var result = _authService.CreateAccessToken(registerResult.Data);
-            if (result.Success)
+            if (ModelState.IsValid)
             {
-                return Ok(result.Data);
-            }
 
-            return BadRequest(result.Message);
+                var operationClaim = _operationClaimService.Get("Customer");
+
+                if (userForRegisterDto.ReferralLink != null)
+                {
+                    var referralLink = _referralLinkService.GetByLink(userForRegisterDto.ReferralLink);
+                    if (referralLink != null)
+                        operationClaim = _operationClaimService.Get("Manager");
+                }
+
+                var userExists = _authService.UserExists(userForRegisterDto.Email);
+                if (!userExists.Success)
+                {
+                    return BadRequest(userExists.Message);
+                }
+
+                var registerResult = _authService.Register(userForRegisterDto, userForRegisterDto.Password);
+
+                _userOperationClaimService.Add(new UserOperationClaim()
+                {
+                    UserId = registerResult.Data.Id,
+                    OperationClaimId = operationClaim.Id
+                });
+
+                var result = _authService.CreateAccessToken(registerResult.Data);
+                if (result.Success)
+                {
+                    return Ok(result.Data);
+                }
+
+                return BadRequest(result.Message);
+            }
+            else
+            {
+                return BadRequest("Captcha doğrulanamamıştır.");
+            }
         }
+
     }
 }

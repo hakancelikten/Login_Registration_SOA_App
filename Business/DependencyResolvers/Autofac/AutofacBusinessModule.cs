@@ -19,8 +19,10 @@ namespace Business.DependencyResolvers.Autofac
             builder.RegisterType<EfUserDal>().As<IUserDal>();
             builder.RegisterType<EfUserOperationClaimDal>().As<IUserOperationClaimDal>();
             builder.RegisterType<EfOperationClaimDal>().As<IOperationClaimDal>();
+            builder.RegisterType<EfReferralLinkDal>().As<IReferralLinkDal>();
 
             builder.RegisterType<AuthManager>().As<IAuthService>();
+            builder.RegisterType<ReferralLinkManager>().As<IReferralLinkService>();
             builder.RegisterType<UserOperationClaimManager>().As<IUserOperationClaimService>();
             builder.RegisterType<OperationClaimManager>().As<IOperationClaimService>();
             builder.RegisterType<JwtHelper>().As<ITokenHelper>();

@@ -1,4 +1,6 @@
-﻿namespace Core.Entities.Concrete
+﻿using Core.Entities;
+
+namespace Entities
 {
     public class UserOperationClaim : IEntity
     {
