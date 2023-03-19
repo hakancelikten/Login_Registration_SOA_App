@@ -1,0 +1,30 @@
+Uygulama .net 6 platformunda soa architecture mimarisiyle geliştirilmiştir.
+IoC container olarak autofac kullanılmıştır.
+Generic repository entegrasyonu da bulunmaktadır.
+Jwt Bearer token authentication ve authorization işlemleri için gerekli alt yapısı eklenmiştir.
+WebApplication projesi bir mvc projesidir. Arayüzü razorpages şeklinde tasarladım.
+Register ve Login ekranlarının tasarımı gerçekleştirilmiştir.
+Robotlara ve brute force'a karşı login ve register ekranlarına captcha eklenmiştir.
+Database olarak sqlserver kullanılmıştır. 1401 portunda çalışacak şekilde config edilmiştir.
+
+NOT: Uygulama Dockerize edilmiştir. Ana dizinde docker-compose.yaml dosyası bulunmaktadır. Sqlserver bu container üzerinde çalışabilmektedir. Ancak Uygulama container'daki Sqlserver'a erişmek istediğinde Tcp protocol yetkilendirmesi yapılması gerekmektedir. Bu konfigurasyonu gerçekleştirebilirsiniz ya da sqlserver'i docker-compose üzerinde çalıştırıp uygulamayı docker veya IIS ile ayağa kaldırırsanız sorun yaşanmayacaktır.
+
+4 adet tablo bulunmaktadır. Uygulama ilk initialize aşamasında tablolar yoksa oluşturulmakta varsa truncate edilmektedir.
+
+Users: Kullanıcı bilgileri tutulmaktadır. Sistem ilk initialize aşamasında Admin rolünde admin@admin.com email'ine sahip bir kullanıcı insert edilmektedir.
+OperationClaims: Roller burada tanımlanmaktadır. Sistem ilk initialize aşamasında Admin, Manager, Customer adında 3 adet rol insert edilmektedir.
+UserOperationClaims: User ve OperationClaim bilgilerini tutan tablodur.
+ReferralLinks: Sistem ilk initialize aşamasında random guid bir veri insert edilmektedir.
+
+Login ve Registration işlemlerinde ilgili controller metodlarında ilk olarak captcha doğrulaması yapılmaktadır.
+
+Registration işleminde post edilen form içerisinde ReferralLink alanı da bulunmaktadır. Eğer ReferralLink varsa tabloda bu guid değeri var mı diye kontrol edilmektedir. Eğer eşleşiyorsa kullanıcı Manager rolü ile sisteme kaydedilmektedir. Eğer ReferralLink yoksa sisteme Customer olarak kaydedilmektedir. En son response olarak üretilen bir token bilgisi döndürülmektedir.
+
+Login işleminde ise form üzerinde girilen değerlere göre User ve UserOperationClaim bilgileri getirilmektedir. 
+Kullanıcıda Admin rolü varsa sistemdeki tüm kullanıcı bilgileri çekilmekte ve response nesnesine eklenmektedir. Kullanıcı Manager veya Customer rolüne sahipse response nesnesinde kendi bilgileri bulunmaktadır. En son response nesnesine Token bilgisi de eklenerek client'a dönülmektedir.
+
+screen_shot adında bir klasöre login ve register işlemleriyle ilgili ekran görüntüsü ve vidoe eklenmiştir.
+
+
+
+

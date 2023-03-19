@@ -1,9 +1,7 @@
 ﻿using Business.Abstract;
 using Core.Utilities.Security.Captcha;
-using Entities;
 using Entities.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,15 +11,11 @@ namespace WebApplication.Controllers
     {
         private IAuthService _authService;
         private IUserService _userService;
-        private IUserOperationClaimService _userOperationClaimService;
-        private IOperationClaimService _operationClaimService;
 
 
-        public LoginController(IAuthService authService, IUserOperationClaimService userOperationClaimService, IOperationClaimService operationClaimService, IUserService userService)
+        public LoginController(IAuthService authService, IUserService userService)
         {
             _authService = authService;
-            _userOperationClaimService = userOperationClaimService;
-            _operationClaimService = operationClaimService;
             _userService = userService;
         }
 
